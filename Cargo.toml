@@ -1,0 +1,13 @@
+[package]
+name = "tftp_client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+byte-strings = "0.3"
+thiserror = "1"
+tracing = "0.1"
+
+[dev-dependencies]
+paste = "1"
+
