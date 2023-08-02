@@ -10,12 +10,6 @@ pub mod parser;
 
 const BLKSISZE: usize = 512;
 
-struct Context {
-    retries: usize,
-    filename: CString,
-    socket: UdpSocket,
-}
-
 enum State {
     Send,
     SendAgain,
@@ -27,6 +21,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
     filename: T,
     socket: &mut UdpSocket,
     timeout: Duration,
+    max_timeout: Duration,
     retries: usize,
 ) -> Result<Vec<u8>, Error> {
     // Make sure we can actually timeout, but preserve the old state
@@ -83,6 +78,9 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                                     return Err(Error::Timeout);
                                 }
                                 local_timeout += local_timeout / 2;
+                                if local_timeout > max_timeout {
+                                    local_timeout = max_timeout;
+                                }
                                 socket
                                     .set_read_timeout(Some(local_timeout))
                                     .map_err(Error::SocketIo)?;
@@ -106,7 +104,12 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                         state = State::Send;
                         continue;
                     }
-                    Packet::Error { code, msg } => todo!(),
+                    Packet::Error { code, msg } => {
+                        return Err(Error::Protocol {
+                            code,
+                            msg: msg.into_string().expect("Error message had invalid UTF-8"),
+                        })
+                    }
                     _ => return Err(Error::UnexpectedPacket(recv_pkt)),
                 }
             }
@@ -132,4 +135,12 @@ pub enum Error {
     Parse(parser::Error),
     #[error("The packet we got back was unexpected")]
     UnexpectedPacket(Packet),
+    #[error(
+        "The protocol itself gave us an error with code `{:?}`and msg `{msg}`",
+        code
+    )]
+    Protocol {
+        code: parser::ErrorCode,
+        msg: String,
+    },
 }
