@@ -7,7 +7,7 @@ fn main() -> std::io::Result<()> {
 
     let timeout = Duration::from_millis(100);
     let max_timeout = Duration::from_secs(5);
-    let retries = 5;
+    let retries = 8;
 
     let bytes = download(
         "/dev/spec_a_vacc",
