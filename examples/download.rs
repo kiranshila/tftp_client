@@ -5,9 +5,9 @@ use std::{
 
 use tftp_client::download;
 
-fn main() -> std::io::Result<()> {
-    let mut socket = UdpSocket::bind("127.0.0.1:0")?;
-    socket.connect("192.168.0.3:69")?;
+fn main() {
+    let mut socket = UdpSocket::bind("127.0.0.1:0").unwrap();
+    socket.connect("192.168.0.3:69").unwrap();
 
     let timeout = Duration::from_millis(100);
     let max_timeout = Duration::from_secs(5);
@@ -23,5 +23,4 @@ fn main() -> std::io::Result<()> {
     .unwrap();
 
     dbg!(bytes);
-    Ok(())
 }
