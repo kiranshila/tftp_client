@@ -248,7 +248,7 @@ pub enum Error {
     SocketIo(std::io::Error),
     #[error("Timeout while trying to complete transaction")]
     Timeout,
-    #[error("Failed to parse incoming packet")]
+    #[error("Failed to parse incoming packet - `{0}`")]
     Parse(parser::Error),
     #[error("The packet we got back was unexpected")]
     UnexpectedPacket(Packet),
