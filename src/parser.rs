@@ -96,27 +96,27 @@ impl Packet {
         let mut buf = vec![];
         match self {
             Packet::ReadRequest { filename, mode } => {
-                buf.extend_from_slice(&1u16.to_ne_bytes());
+                buf.extend_from_slice(&1u16.to_be_bytes());
                 buf.extend_from_slice(filename.to_bytes_with_nul());
                 buf.extend_from_slice(mode.into_cstr().to_bytes_with_nul());
             }
             Packet::WriteRequest { filename, mode } => {
-                buf.extend_from_slice(&2u16.to_ne_bytes());
+                buf.extend_from_slice(&2u16.to_be_bytes());
                 buf.extend_from_slice(filename.to_bytes_with_nul());
                 buf.extend_from_slice(mode.into_cstr().to_bytes_with_nul());
             }
             Packet::Data { block_n, data } => {
-                buf.extend_from_slice(&3u16.to_ne_bytes());
-                buf.extend_from_slice(&block_n.to_ne_bytes());
+                buf.extend_from_slice(&3u16.to_be_bytes());
+                buf.extend_from_slice(&block_n.to_be_bytes());
                 buf.extend_from_slice(data);
             }
             Packet::Acknowledgment { block_n } => {
-                buf.extend_from_slice(&4u16.to_ne_bytes());
-                buf.extend_from_slice(&block_n.to_ne_bytes());
+                buf.extend_from_slice(&4u16.to_be_bytes());
+                buf.extend_from_slice(&block_n.to_be_bytes());
             }
             Packet::Error { code, msg } => {
-                buf.extend_from_slice(&5u16.to_ne_bytes());
-                buf.extend_from_slice(&(*code as u16).to_ne_bytes());
+                buf.extend_from_slice(&5u16.to_be_bytes());
+                buf.extend_from_slice(&(*code as u16).to_be_bytes());
                 buf.extend_from_slice(msg.as_bytes_with_nul());
             }
         }
@@ -129,7 +129,7 @@ impl Packet {
             return Err(Error::Incomplete);
         }
         // Now we're guaranteed to at least have the opcode
-        let opcode = u16::from_ne_bytes(bytes[0..2].try_into().unwrap());
+        let opcode = u16::from_be_bytes(bytes[0..2].try_into().unwrap());
         let body = &bytes[2..];
         match opcode {
             // RRQ
@@ -175,7 +175,7 @@ impl Packet {
                 if body.len() < 2 {
                     Err(Error::Incomplete)
                 } else {
-                    let block_n = u16::from_ne_bytes(body[..2].try_into().unwrap());
+                    let block_n = u16::from_be_bytes(body[..2].try_into().unwrap());
                     let data = body[2..].to_vec();
                     Ok(Packet::Data { block_n, data })
                 }
@@ -183,7 +183,7 @@ impl Packet {
             // ACK
             4 => {
                 // We've already checked length for this smallest payload
-                let block_n = u16::from_ne_bytes(body[..2].try_into().unwrap());
+                let block_n = u16::from_be_bytes(body[..2].try_into().unwrap());
                 Ok(Packet::Acknowledgment { block_n })
             }
             // ERROR
@@ -193,7 +193,7 @@ impl Packet {
                     Err(Error::Incomplete)
                 } else {
                     let code =
-                        ErrorCode::from_u16(u16::from_ne_bytes(body[0..2].try_into().unwrap()))?;
+                        ErrorCode::from_u16(u16::from_be_bytes(body[0..2].try_into().unwrap()))?;
                     // The rest should have exactly one null byte at the end for the string
                     if *body[2..].last().unwrap() != 0 {
                         Err(Error::BadString)

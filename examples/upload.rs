@@ -1,6 +1,6 @@
 use std::{net::UdpSocket, time::Duration};
 
-use tftp_client::download;
+use tftp_client::upload;
 
 fn main() {
     let mut socket = UdpSocket::bind("0.0.0.0:0").unwrap();
@@ -10,14 +10,13 @@ fn main() {
     let max_timeout = Duration::from_secs(5);
     let retries = 8;
 
-    let bytes = download(
+    upload(
         "/dev/spec_a_vacc",
+        &vec![0x69; 16384],
         &mut socket,
         timeout,
         max_timeout,
         retries,
     )
     .unwrap();
-
-    dbg!(bytes);
 }
