@@ -189,7 +189,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                                 socket
                                     .set_read_timeout(Some(local_timeout))
                                     .map_err(Error::SocketIo)?;
-                                state = State::Recv;
+                                state = State::SendAgain;
                                 continue;
                             }
                             _ => return Err(Error::SocketIo(e)),
