@@ -1,7 +1,10 @@
 //! Parser and serialization of the TFTP [`Packet`]
 
 use byte_strings::c_str;
-use std::ffi::{CStr, CString};
+use std::{
+    ffi::{CStr, CString},
+    fmt::Display,
+};
 use thiserror::Error;
 
 #[repr(u16)]
@@ -16,6 +19,22 @@ pub enum ErrorCode {
     Exist = 6,
     BadUser = 7,
     BadOpt = 8,
+}
+
+impl Display for ErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ErrorCode::Unspec => write!(f, "Not defined, see error message"),
+            ErrorCode::NoFile => write!(f, "File not found"),
+            ErrorCode::Access => write!(f, "Access violation"),
+            ErrorCode::Write => write!(f, "Disk full or allocation exceeded"),
+            ErrorCode::Op => write!(f, "Illegal TFTP operation"),
+            ErrorCode::BadId => write!(f, "Unknown transfer ID"),
+            ErrorCode::Exist => write!(f, "File already exists"),
+            ErrorCode::BadUser => write!(f, "No such user"),
+            ErrorCode::BadOpt => write!(f, "Bad option"),
+        }
+    }
 }
 
 impl ErrorCode {
@@ -40,6 +59,16 @@ pub enum RequestMode {
     Octet,
     NetAscii,
     Mail,
+}
+
+impl Display for RequestMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RequestMode::Octet => write!(f, "octet"),
+            RequestMode::NetAscii => write!(f, "netascii"),
+            RequestMode::Mail => write!(f, "mail"),
+        }
+    }
 }
 
 impl RequestMode {
@@ -89,6 +118,24 @@ pub enum Packet {
         code: ErrorCode,
         msg: CString,
     },
+}
+
+impl Display for Packet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Packet::ReadRequest { filename, mode } => {
+                write!(f, "RRQ {} {mode}", filename.to_str().unwrap())
+            }
+            Packet::WriteRequest { filename, mode } => {
+                write!(f, "WRQ {} {mode}", filename.to_str().unwrap())
+            }
+            Packet::Data { block_n, data: _ } => write!(f, "DATA block:{block_n}"),
+            Packet::Acknowledgment { block_n } => write!(f, "ACK block:{block_n}"),
+            Packet::Error { code, msg } => {
+                write!(f, "ERROR code:{code} msg:{}", msg.to_str().unwrap())
+            }
+        }
+    }
 }
 
 impl Packet {

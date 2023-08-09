@@ -16,7 +16,6 @@ enum State {
     Recv,
 }
 
-#[instrument]
 pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     filename: T,
     socket: &mut UdpSocket,
@@ -123,7 +122,6 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     Ok(file_data)
 }
 
-#[instrument]
 pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     filename: T,
     data: &[u8],
