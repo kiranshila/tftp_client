@@ -4,7 +4,7 @@
 use parser::Packet;
 use std::{ffi::CString, io, net::UdpSocket, time::Duration};
 use thiserror::Error;
-use tracing::{debug, instrument};
+use tracing::debug;
 
 pub mod parser;
 
@@ -46,7 +46,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 local_retries = retries;
                 local_timeout = timeout;
                 let bytes = send_pkt.to_bytes();
-                debug!("Sending bytes - {:?}", bytes);
+                debug!("Sending: {send_pkt}");
                 // Send the bytes and reset some other state variables
                 let _n = socket.send(&bytes).map_err(Error::SocketIo)?;
                 // Transition to recv if this wasn't the last ACK packet
@@ -58,7 +58,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
             }
             State::SendAgain => {
                 let bytes = send_pkt.to_bytes();
-                debug!("Retry sending bytes - {:?}", bytes);
+                debug!("Retry Sending: {send_pkt}");
                 // Send the bytes and reset some other state variables
                 socket.send(&bytes).map_err(Error::SocketIo)?;
                 // Transition to recv
@@ -92,6 +92,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 };
                 // Process the received packet
                 let recv_pkt = Packet::from_bytes(&buf[..n]).map_err(Error::Parse)?;
+                debug!("Received: {recv_pkt}");
                 match recv_pkt {
                     Packet::Data { block_n, data } => {
                         // We got back a chunk of data, we need to ack it and append to the data we're collecting
@@ -154,7 +155,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 local_retries = retries;
                 local_timeout = timeout;
                 let bytes = send_pkt.to_bytes();
-                debug!("Sending bytes - {:?}", bytes);
+                debug!("Sending: {send_pkt}");
                 // Send the bytes and reset some other state variables
                 let _n = socket.send(&bytes).map_err(Error::SocketIo)?;
                 // Transition to recv if this wasn't the last ACK packet
@@ -162,7 +163,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
             }
             State::SendAgain => {
                 let bytes = send_pkt.to_bytes();
-                debug!("Retry sending bytes - {:?}", bytes);
+                debug!("Retry Sending: {send_pkt}");
                 // Send the bytes and reset some other state variables
                 socket.send(&bytes).map_err(Error::SocketIo)?;
                 // Transition to recv
@@ -196,6 +197,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 };
                 // Process the received packet
                 let recv_pkt = Packet::from_bytes(&buf[..n]).map_err(Error::Parse)?;
+                debug!("Received: {recv_pkt}");
                 match recv_pkt {
                     Packet::Acknowledgment { block_n } => {
                         // Fix for https://en.wikipedia.org/wiki/Sorcerer%27s_Apprentice_Syndrome
