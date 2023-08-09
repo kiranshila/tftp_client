@@ -126,7 +126,7 @@ impl Packet {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         if bytes.len() < 4 {
             // Check against the smallest payload size (ACK)
-            return Err(Error::Incomplete);
+            return Err(Error::Incomplete(bytes.len()));
         }
         // Now we're guaranteed to at least have the opcode
         let opcode = u16::from_be_bytes(bytes[0..2].try_into().unwrap());
@@ -137,12 +137,12 @@ impl Packet {
                 // Smallest size after the opcode is 7 bytes
                 // 2 bytes for 1 char filename and 5 bytes for "mail" mode
                 if body.len() < 7 {
-                    Err(Error::Incomplete)
+                    Err(Error::Incomplete(body.len()))
                 } else {
                     // The rest should have exactly two null bytes, one for each string
                     let mut iter = body.splitn(3, |x| *x == 0);
-                    let filename = iter.next().ok_or(Error::Incomplete)?;
-                    let mode = iter.next().ok_or(Error::Incomplete)?;
+                    let filename = iter.next().ok_or(Error::Incomplete(0))?;
+                    let mode = iter.next().ok_or(Error::Incomplete(0))?;
                     Ok(Packet::ReadRequest {
                         filename: CString::new(filename).map_err(|_| Error::BadString)?,
                         mode: RequestMode::from_cstr(
@@ -155,12 +155,12 @@ impl Packet {
             2 => {
                 // Same story as RRQ, but different discriminant
                 if body.len() < 7 {
-                    Err(Error::Incomplete)
+                    Err(Error::Incomplete(body.len()))
                 } else {
                     // The rest should have exactly two null bytes, one for each string
                     let mut iter = body.splitn(3, |x| *x == 0);
-                    let filename = iter.next().ok_or(Error::Incomplete)?;
-                    let mode = iter.next().ok_or(Error::Incomplete)?;
+                    let filename = iter.next().ok_or(Error::Incomplete(0))?;
+                    let mode = iter.next().ok_or(Error::Incomplete(0))?;
                     Ok(Packet::WriteRequest {
                         filename: CString::new(filename).map_err(|_| Error::BadString)?,
                         mode: RequestMode::from_cstr(
@@ -173,7 +173,7 @@ impl Packet {
             3 => {
                 // Minimum data body size is a block num of 2 bytes and 0 data bytes,
                 if body.len() < 2 {
-                    Err(Error::Incomplete)
+                    Err(Error::Incomplete(body.len()))
                 } else {
                     let block_n = u16::from_be_bytes(body[..2].try_into().unwrap());
                     let data = body[2..].to_vec();
@@ -190,7 +190,7 @@ impl Packet {
             5 => {
                 // Minimum size here is 3 bytes, 2 for the error code and 1 for a zero length string (null byte)
                 if body.len() < 3 {
-                    Err(Error::Incomplete)
+                    Err(Error::Incomplete(body.len()))
                 } else {
                     let code =
                         ErrorCode::from_u16(u16::from_be_bytes(body[0..2].try_into().unwrap()))?;
@@ -211,8 +211,8 @@ impl Packet {
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("Too few bytes recieved")]
-    Incomplete,
+    #[error("Too few bytes recieved - `{0}`")]
+    Incomplete(usize),
     #[error("Opcode wasn't expected - `{0}`")]
     BadOpcode(u16),
     #[error("String in payload wasn't a valid CString or was otherwise invalid")]
