@@ -171,7 +171,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 state = State::Recv
             }
             State::Recv => {
-                let mut buf = vec![0; 4]; // The biggest a block can be, 2 bytes for opcode, 2 bytes for block n
+                let mut buf = vec![0; BLKSISZE + 4];
                 let n = match socket.recv(&mut buf) {
                     Ok(n) => n,
                     Err(e) => {
