@@ -93,7 +93,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                 // Process the received packet
                 let recv_pkt = match Packet::from_bytes(&buf[..n]).map_err(Error::Parse) {
                     Ok(p) => p,
-                    Err(Error::Parse(parser::Error::Incomplete)) => {
+                    Err(Error::Parse(parser::Error::Incomplete(_))) => {
                         state = State::SendAgain;
                         continue;
                     }
