@@ -28,7 +28,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     socket
         .set_read_timeout(Some(timeout))
         .map_err(Error::SocketIo)?;
-    debug!("┌ GET {filename}");
+    debug!("┌── GET {filename}");
     // Initialize the state of our state machine
     let mut state = State::Send;
     let mut local_retries = retries;
@@ -137,7 +137,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     socket
         .set_read_timeout(Some(timeout))
         .map_err(Error::SocketIo)?;
-    debug!("┌ PUT {filename}");
+    debug!("┌── PUT {filename}");
     // Initialize the state of our state machine
     let mut state = State::Send;
     let mut local_retries = retries;
