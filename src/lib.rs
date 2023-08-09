@@ -28,7 +28,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     socket
         .set_read_timeout(Some(timeout))
         .map_err(Error::SocketIo)?;
-    debug!("┌ Starting download of {filename}");
+    debug!("┌ GET {filename}");
     // Initialize the state of our state machine
     let mut state = State::Send;
     let mut local_retries = retries;
@@ -46,7 +46,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 local_retries = retries;
                 local_timeout = timeout;
                 let bytes = send_pkt.to_bytes();
-                debug!("│ Sending: {send_pkt}");
+                debug!("│ TX - {send_pkt}");
                 // Send the bytes and reset some other state variables
                 let _n = socket.send(&bytes).map_err(Error::SocketIo)?;
                 // Transition to recv if this wasn't the last ACK packet
@@ -58,7 +58,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
             }
             State::SendAgain => {
                 let bytes = send_pkt.to_bytes();
-                debug!("│ Retry Sending: {send_pkt}");
+                debug!("│ TX - {send_pkt} (Retry)");
                 // Send the bytes and reset some other state variables
                 socket.send(&bytes).map_err(Error::SocketIo)?;
                 // Transition to recv
@@ -92,7 +92,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 };
                 // Process the received packet
                 let recv_pkt = Packet::from_bytes(&buf[..n]).map_err(Error::Parse)?;
-                debug!("│ Received: {recv_pkt}");
+                debug!("│ RX - {recv_pkt}");
                 match recv_pkt {
                     Packet::Data { block_n, data } => {
                         // We got back a chunk of data, we need to ack it and append to the data we're collecting
@@ -115,7 +115,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
             }
         }
     }
-    debug!("└ Transaction complete");
+    debug!("└");
     // Return socket timeout to previous state
     socket
         .set_read_timeout(old_read_timeout)
@@ -137,7 +137,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     socket
         .set_read_timeout(Some(timeout))
         .map_err(Error::SocketIo)?;
-    debug!("Starting upload of data to {filename}");
+    debug!("┌ PUT {filename}");
     // Initialize the state of our state machine
     let mut state = State::Send;
     let mut local_retries = retries;
@@ -156,7 +156,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 local_retries = retries;
                 local_timeout = timeout;
                 let bytes = send_pkt.to_bytes();
-                debug!("Sending: {send_pkt}");
+                debug!("│ TX - {send_pkt}");
                 // Send the bytes and reset some other state variables
                 let _n = socket.send(&bytes).map_err(Error::SocketIo)?;
                 // Transition to recv if this wasn't the last ACK packet
@@ -164,7 +164,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
             }
             State::SendAgain => {
                 let bytes = send_pkt.to_bytes();
-                debug!("Retry Sending: {send_pkt}");
+                debug!("│ TX - {send_pkt} (Retry)");
                 // Send the bytes and reset some other state variables
                 socket.send(&bytes).map_err(Error::SocketIo)?;
                 // Transition to recv
@@ -198,7 +198,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                 };
                 // Process the received packet
                 let recv_pkt = Packet::from_bytes(&buf[..n]).map_err(Error::Parse)?;
-                debug!("Received: {recv_pkt}");
+                debug!("│ RX - {recv_pkt}");
                 match recv_pkt {
                     Packet::Acknowledgment { block_n } => {
                         // Fix for https://en.wikipedia.org/wiki/Sorcerer%27s_Apprentice_Syndrome
@@ -235,6 +235,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
             }
         }
     }
+    debug!("└");
     // Return socket timeout to previous state
     socket
         .set_read_timeout(old_read_timeout)
