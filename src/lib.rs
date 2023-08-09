@@ -91,7 +91,14 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                     }
                 };
                 // Process the received packet
-                let recv_pkt = Packet::from_bytes(&buf[..n]).map_err(Error::Parse)?;
+                let recv_pkt = match Packet::from_bytes(&buf[..n]).map_err(Error::Parse) {
+                    Ok(p) => p,
+                    Err(Error::Parse(parser::Error::Incomplete)) => {
+                        state = State::SendAgain;
+                        continue;
+                    }
+                    Err(e) => return Err(e),
+                };
                 match recv_pkt {
                     Packet::Data { block_n, data } => {
                         // We got back a chunk of data, we need to ack it and append to the data we're collecting

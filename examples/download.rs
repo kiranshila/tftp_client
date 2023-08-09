@@ -10,14 +10,7 @@ fn main() {
     let max_timeout = Duration::from_secs(5);
     let retries = 8;
 
-    let bytes = download(
-        "/dev/spec_a_vacc",
-        &mut socket,
-        timeout,
-        max_timeout,
-        retries,
-    )
-    .unwrap();
+    let bytes = download("/temp", &mut socket, timeout, max_timeout, retries).unwrap();
 
-    dbg!(bytes);
+    dbg!(f32::from_be_bytes(bytes.try_into().unwrap()));
 }
