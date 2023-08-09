@@ -71,7 +71,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                     Ok(n) => n,
                     Err(e) => {
                         match e.kind() {
-                            io::ErrorKind::TimedOut => {
+                            io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock => {
                                 // We timed out, try sending the last packet again with exponential backoff
                                 local_retries -= 1;
                                 if local_retries == 0 {
@@ -176,7 +176,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
                     Ok(n) => n,
                     Err(e) => {
                         match e.kind() {
-                            io::ErrorKind::TimedOut => {
+                            io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock => {
                                 // We timed out, try sending the last packet again with exponential backoff
                                 local_retries -= 1;
                                 if local_retries == 0 {
