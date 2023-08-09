@@ -4,7 +4,7 @@
 use parser::Packet;
 use std::{ffi::CString, io, net::UdpSocket, time::Duration};
 use thiserror::Error;
-use tracing::debug;
+use tracing::{debug, instrument};
 
 pub mod parser;
 
@@ -16,7 +16,8 @@ enum State {
     Recv,
 }
 
-pub fn download<T: AsRef<str> + std::fmt::Display>(
+#[instrument]
+pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     filename: T,
     socket: &mut UdpSocket,
     timeout: Duration,
@@ -91,14 +92,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                     }
                 };
                 // Process the received packet
-                let recv_pkt = match Packet::from_bytes(&buf[..n]).map_err(Error::Parse) {
-                    Ok(p) => p,
-                    Err(Error::Parse(parser::Error::Incomplete(_))) => {
-                        state = State::SendAgain;
-                        continue;
-                    }
-                    Err(e) => return Err(e),
-                };
+                let recv_pkt = Packet::from_bytes(&buf[..n]).map_err(Error::Parse)?;
                 match recv_pkt {
                     Packet::Data { block_n, data } => {
                         // We got back a chunk of data, we need to ack it and append to the data we're collecting
@@ -129,7 +123,8 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
     Ok(file_data)
 }
 
-pub fn upload<T: AsRef<str> + std::fmt::Display>(
+#[instrument]
+pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     filename: T,
     data: &[u8],
     socket: &mut UdpSocket,
