@@ -2,7 +2,12 @@
 //! This includes retries and timeouts with exponential backoff
 
 use parser::Packet;
-use std::{ffi::CString, io, net::UdpSocket, time::Duration};
+use std::{
+    ffi::CString,
+    io,
+    net::UdpSocket,
+    time::Duration,
+};
 use thiserror::Error;
 use tracing::debug;
 
@@ -19,7 +24,7 @@ enum State {
 /// Download a file via tftp
 pub fn download<T: AsRef<str> + std::fmt::Display>(
     filename: T,
-    socket: &mut UdpSocket,
+    socket: &UdpSocket,
     timeout: Duration,
     max_timeout: Duration,
     retries: usize,
@@ -73,7 +78,8 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                         match e.kind() {
                             io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock => {
                                 debug!("│ Timeout");
-                                // We timed out, try sending the last packet again with exponential backoff
+                                // We timed out, try sending the last packet again with exponential
+                                // backoff
                                 local_retries -= 1;
                                 if local_retries == 0 {
                                     return Err(Error::Timeout);
@@ -97,7 +103,8 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                 debug!("│ RX - {recv_pkt}");
                 match recv_pkt {
                     Packet::Data { block_n, data } => {
-                        // We got back a chunk of data, we need to ack it and append to the data we're collecting
+                        // We got back a chunk of data, we need to ack it and append to the data
+                        // we're collecting
                         file_data.extend_from_slice(&data);
                         if data.len() < BLKSISZE {
                             done = true
@@ -130,7 +137,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
 pub fn upload<T: AsRef<str> + std::fmt::Display>(
     filename: T,
     data: &[u8],
-    socket: &mut UdpSocket,
+    socket: &UdpSocket,
     timeout: Duration,
     max_timeout: Duration,
     retries: usize,
@@ -181,7 +188,8 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
                         match e.kind() {
                             io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock => {
                                 debug!("│ Timeout");
-                                // We timed out, try sending the last packet again with exponential backoff
+                                // We timed out, try sending the last packet again with exponential
+                                // backoff
                                 local_retries -= 1;
                                 if local_retries == 0 {
                                     return Err(Error::Timeout);

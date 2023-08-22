@@ -2,7 +2,10 @@
 
 use byte_strings::c_str;
 use std::{
-    ffi::{CStr, CString},
+    ffi::{
+        CStr,
+        CString,
+    },
     fmt::Display,
 };
 use thiserror::Error;
@@ -235,7 +238,8 @@ impl Packet {
             }
             // ERROR
             5 => {
-                // Minimum size here is 3 bytes, 2 for the error code and 1 for a zero length string (null byte)
+                // Minimum size here is 3 bytes, 2 for the error code and 1 for a zero length string
+                // (null byte)
                 if body.len() < 3 {
                     Err(Error::Incomplete(body.len()))
                 } else {
