@@ -1,4 +1,4 @@
-# tftp-client
+# tftp_client
 > A pure-rust TFTP client library
 
 [![license](https://img.shields.io/badge/license-Apache--2.0_OR_MIT-blue?style=flat-square)](#license)
