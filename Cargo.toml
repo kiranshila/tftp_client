@@ -6,7 +6,7 @@ license = "Apache-2.0 OR MIT"
 repository = "https://github.com/kiranshila/tftp_client"
 description = "A pure-rust TFTP client library"
 homepage = "https://github.com/kiranshila/tftp_client"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["tftp"]
 categories = ["network-programming"]
 
