@@ -16,7 +16,8 @@ enum State {
     Recv,
 }
 
-pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
+/// Download a file via tftp
+pub fn download<T: AsRef<str> + std::fmt::Display>(
     filename: T,
     socket: &mut UdpSocket,
     timeout: Duration,
@@ -125,7 +126,8 @@ pub fn download<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
     Ok(file_data)
 }
 
-pub fn upload<T: AsRef<str> + std::fmt::Display + std::fmt::Debug>(
+/// Upload a file via tftp
+pub fn upload<T: AsRef<str> + std::fmt::Display>(
     filename: T,
     data: &[u8],
     socket: &mut UdpSocket,
