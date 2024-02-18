@@ -33,9 +33,9 @@ jobs:
       - name: Setup test deps
         run: sudo apt-get install -y xinetd tftpd tftp
       - name: Create directory for tftp
-        run: mkdir /tmp/tftp
+        run: sudo mkdir /tmp/tftp
       - name: Run TFTP server
-        run: sudo in.tftpd -L -s /tmp/tftp --create
+        run: sudo in.tftpd -L -s /tmp/tftp --create --user root
       - name: Tests
         run: cargo test
       - name: Install cargo-llvm-cov
