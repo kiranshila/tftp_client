@@ -5,7 +5,7 @@ use parser::Packet;
 use std::{
     ffi::CString,
     io,
-    net::UdpSocket,
+    net::{SocketAddr, UdpSocket},
     time::Duration,
 };
 use thiserror::Error;
@@ -25,10 +25,12 @@ enum State {
 pub fn download<T: AsRef<str> + std::fmt::Display>(
     filename: T,
     socket: &UdpSocket,
+    mut server: SocketAddr,
     timeout: Duration,
     max_timeout: Duration,
     retries: usize,
 ) -> Result<Vec<u8>, Error> {
+    // Set our server address to the inital address, it will potentially change
     // Make sure we can actually timeout, but preserve the old state
     let old_read_timeout = socket.read_timeout().map_err(Error::SocketIo)?;
     socket
@@ -54,26 +56,29 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                 let bytes = send_pkt.to_bytes();
                 debug!("│ TX - {send_pkt}");
                 // Send the bytes and reset some other state variables
-                let _n = socket.send(&bytes).map_err(Error::SocketIo)?;
+                socket.send_to(&bytes, server).map_err(Error::SocketIo)?;
                 // Transition to recv if this wasn't the last ACK packet
                 if done {
                     break;
-                } else {
-                    state = State::Recv
                 }
+                state = State::Recv
             }
             State::SendAgain => {
                 let bytes = send_pkt.to_bytes();
                 debug!("│ TX - {send_pkt} (Retry)");
                 // Send the bytes and reset some other state variables
-                socket.send(&bytes).map_err(Error::SocketIo)?;
+                socket.send_to(&bytes, server).map_err(Error::SocketIo)?;
                 // Transition to recv
                 state = State::Recv
             }
             State::Recv => {
                 let mut buf = vec![0; BLKSISZE + 4]; // The biggest a block can be, 2 bytes for opcode, 2 bytes for block n
-                let n = match socket.recv(&mut buf) {
-                    Ok(n) => n,
+                let n = match socket.recv_from(&mut buf) {
+                    Ok((n, remote_addr)) => {
+                        // Set the server's address as it may have changed ports (as the spec allows)
+                        server = remote_addr;
+                        n
+                    }
                     Err(e) => {
                         match e.kind() {
                             io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock => {
@@ -138,6 +143,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
     filename: T,
     data: &[u8],
     socket: &UdpSocket,
+    mut server: SocketAddr,
     timeout: Duration,
     max_timeout: Duration,
     retries: usize,
@@ -168,7 +174,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
                 let bytes = send_pkt.to_bytes();
                 debug!("│ TX - {send_pkt}");
                 // Send the bytes and reset some other state variables
-                let _n = socket.send(&bytes).map_err(Error::SocketIo)?;
+                socket.send_to(&bytes, server).map_err(Error::SocketIo)?;
                 // Transition to recv if this wasn't the last ACK packet
                 state = State::Recv;
             }
@@ -176,14 +182,18 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
                 let bytes = send_pkt.to_bytes();
                 debug!("│ TX - {send_pkt} (Retry)");
                 // Send the bytes and reset some other state variables
-                socket.send(&bytes).map_err(Error::SocketIo)?;
+                socket.send_to(&bytes, server).map_err(Error::SocketIo)?;
                 // Transition to recv
                 state = State::Recv
             }
             State::Recv => {
                 let mut buf = vec![0; BLKSISZE + 4];
-                let n = match socket.recv(&mut buf) {
-                    Ok(n) => n,
+                let n = match socket.recv_from(&mut buf) {
+                    Ok((n, remote_addr)) => {
+                        // Set the server's address as it may have changed ports (as the spec allows)
+                        server = remote_addr;
+                        n
+                    }
                     Err(e) => {
                         match e.kind() {
                             io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock => {
@@ -227,14 +237,13 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
                         // We got back an ack, we need to send out that ack's chunk of data
                         if block_n as usize == chunks.len() {
                             break;
-                        } else {
-                            send_pkt = Packet::Data {
-                                block_n: block_n + 1,
-                                data: chunks[block_n as usize].into(),
-                            };
-                            state = State::Send;
-                            continue;
                         }
+                        send_pkt = Packet::Data {
+                            block_n: block_n + 1,
+                            data: chunks[block_n as usize].into(),
+                        };
+                        state = State::Send;
+                        continue;
                     }
                     Packet::Error { code, msg } => {
                         return Err(Error::Protocol {
