@@ -1,5 +1,11 @@
-use std::{net::UdpSocket, time::Duration};
-use tftp_client::{download, upload};
+use std::{
+    net::UdpSocket,
+    time::Duration,
+};
+use tftp_client::{
+    download,
+    upload,
+};
 
 #[test]
 fn download_upload() {
