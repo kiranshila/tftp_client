@@ -31,7 +31,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust-version }}
       - name: Setup test deps
-        run: apt-get install xinetd tftpd tftp & in.tftpd -L -s /tmp/tftp --create &
+        run: sudo apt-get install xinetd tftpd tftp & sudo in.tftpd -L -s /tmp/tftp --create &
       - name: Tests
         run: cargo test
       - name: Install cargo-llvm-cov
