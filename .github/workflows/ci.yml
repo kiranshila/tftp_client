@@ -36,7 +36,7 @@ jobs:
       - name: Create TFTP dir
         run: sudo mkdir /tmp/tftp
       - name: Run TFTP server
-        run: sudo in.tftpd -L -s /tmp/tftp --create --user root
+        run: sudo in.tftpd -L -s /tmp/tftp --create --user root &
       - name: Tests
         run: cargo test
       - name: Install cargo-llvm-cov
