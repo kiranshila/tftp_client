@@ -1,4 +1,7 @@
-use std::{net::UdpSocket, time::Duration};
+use std::{
+    net::UdpSocket,
+    time::Duration,
+};
 
 use tftp_client::download;
 

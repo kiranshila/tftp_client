@@ -5,7 +5,10 @@ use parser::Packet;
 use std::{
     ffi::CString,
     io,
-    net::{SocketAddr, UdpSocket},
+    net::{
+        SocketAddr,
+        UdpSocket,
+    },
     time::Duration,
 };
 use thiserror::Error;
@@ -75,7 +78,8 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                 let mut buf = vec![0; BLKSISZE + 4]; // The biggest a block can be, 2 bytes for opcode, 2 bytes for block n
                 let n = match socket.recv_from(&mut buf) {
                     Ok((n, remote_addr)) => {
-                        // Set the server's address as it may have changed ports (as the spec allows)
+                        // Set the server's address as it may have changed ports (as the spec
+                        // allows)
                         server = remote_addr;
                         n
                     }
@@ -190,7 +194,8 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
                 let mut buf = vec![0; BLKSISZE + 4];
                 let n = match socket.recv_from(&mut buf) {
                     Ok((n, remote_addr)) => {
-                        // Set the server's address as it may have changed ports (as the spec allows)
+                        // Set the server's address as it may have changed ports (as the spec
+                        // allows)
                         server = remote_addr;
                         n
                     }
