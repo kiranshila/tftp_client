@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.2.0] - 2024-02-17
 
-## Changed
+### Changed
 
 - [breaking-change] Use an unconnected socket as the argument and pass in the inital server address to fix #1
 
