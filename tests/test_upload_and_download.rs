@@ -1,12 +1,6 @@
-use std::{
-    net::UdpSocket,
-    time::Duration,
-};
+use std::{net::UdpSocket, time::Duration};
 
-use tftp_client::{
-    download,
-    upload,
-};
+use tftp_client::{download, upload};
 
 fn main() {
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();

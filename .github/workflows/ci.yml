@@ -1,34 +1,22 @@
-on: push
 name: CI
+
+on: push
+
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    env:
-      RUSTFLAGS: -D warnings
-      CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          submodules: true
-          fetch-depth: 0
-      - uses: actions-rs/toolchain@v1
-        with:
-          # We need nightly for fmt
           toolchain: nightly
-          override: true
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
+          rustflags: -Dwarnings
       - name: Lint (clippy)
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-targets
+        run: cargo clippy # Eventually there will be a actions-rust-lang version with problem matching
       - name: Lint (rustfmt)
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --check
+        uses: actions-rust-lang/rustfmt@v1
 
   build:
     name: Build and test
@@ -37,29 +25,15 @@ jobs:
       matrix:
         rust-version: [stable, 1.65, nightly]
       fail-fast: false
-    env:
-      RUSTFLAGS: -D warnings
-      CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          fetch-depth: 0
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust-version }}
-          override: true
-          components: llvm-tools-preview
-      - uses: Swatinem/rust-cache@v1
-      - name: Build all targets with
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --all-targets
+      - name: Setup test deps
+        run: apt-get install xinetd tftpd tftp & in.tftpd -L -s /tmp/tftp --create &
       - name: Tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+        run: cargo test
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate code coverage
