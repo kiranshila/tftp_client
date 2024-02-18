@@ -32,6 +32,7 @@ jobs:
           toolchain: ${{ matrix.rust-version }}
       - name: Setup test deps
         run: sudo apt-get install -y tftpd-hpa
+      - run: sudo service tftpd-hpa stop
       - name: Create TFTP dir
         run: sudo mkdir /tmp/tftp
       - name: Run TFTP server
