@@ -1,20 +1,15 @@
 //! An implementation of the TFTP Client as specified in [RFC 1350](https://datatracker.ietf.org/doc/html/rfc1350)
 //! This includes retries and timeouts with exponential backoff
 
-use parser::Packet;
-use std::{
-    ffi::CString,
-    io,
-    net::{
-        SocketAddr,
-        UdpSocket,
-    },
-    time::Duration,
-};
+use std::ffi::CString;
+use std::net::{SocketAddr, UdpSocket};
+use std::time::Duration;
+
 use thiserror::Error;
 use tracing::debug;
 
 pub mod parser;
+use parser::Packet;
 
 const BLKSIZE: usize = 512;
 
@@ -85,7 +80,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                     }
                     Err(e) => {
                         match e.kind() {
-                            io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock => {
+                            std::io::ErrorKind::TimedOut | std::io::ErrorKind::WouldBlock => {
                                 debug!("│ Timeout");
                                 // We timed out, try sending the last packet again with exponential
                                 // backoff
@@ -201,7 +196,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
                     }
                     Err(e) => {
                         match e.kind() {
-                            io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock => {
+                            std::io::ErrorKind::TimedOut | std::io::ErrorKind::WouldBlock => {
                                 debug!("│ Timeout");
                                 // We timed out, try sending the last packet again with exponential
                                 // backoff
@@ -282,10 +277,7 @@ pub enum Error {
     Parse(parser::Error),
     #[error("The packet we got back was unexpected")]
     UnexpectedPacket(Packet),
-    #[error(
-        "The protocol itself gave us an error with code `{:?}`and msg `{msg}`",
-        code
-    )]
+    #[error("The protocol itself gave us an error with code `{code:?}`and msg `{msg}`")]
     Protocol {
         code: parser::ErrorCode,
         msg: String,
