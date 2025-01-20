@@ -16,7 +16,7 @@ use tracing::debug;
 
 pub mod parser;
 
-const BLKSISZE: usize = 512;
+const BLKSIZE: usize = 512;
 
 enum State {
     Send,
@@ -75,7 +75,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                 state = State::Recv
             }
             State::Recv => {
-                let mut buf = vec![0; BLKSISZE + 4]; // The biggest a block can be, 2 bytes for opcode, 2 bytes for block n
+                let mut buf = vec![0; BLKSIZE + 4]; // The biggest a block can be, 2 bytes for opcode, 2 bytes for block n
                 let n = match socket.recv_from(&mut buf) {
                     Ok((n, remote_addr)) => {
                         // Set the server's address as it may have changed ports (as the spec
@@ -115,7 +115,7 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                         // We got back a chunk of data, we need to ack it and append to the data
                         // we're collecting
                         file_data.extend_from_slice(&data);
-                        if data.len() < BLKSISZE {
+                        if data.len() < BLKSIZE {
                             done = true
                         }
                         send_pkt = Packet::Acknowledgment { block_n };
@@ -167,7 +167,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
         mode: parser::RequestMode::Octet,
     };
     // Create the chunk vec for our data
-    let chunks: Vec<_> = data.chunks(BLKSISZE).collect();
+    let chunks: Vec<_> = data.chunks(BLKSIZE).collect();
     let mut last_block_n = -1;
     // Run the state machine
     loop {
@@ -191,7 +191,7 @@ pub fn upload<T: AsRef<str> + std::fmt::Display>(
                 state = State::Recv
             }
             State::Recv => {
-                let mut buf = vec![0; BLKSISZE + 4];
+                let mut buf = vec![0; BLKSIZE + 4];
                 let n = match socket.recv_from(&mut buf) {
                     Ok((n, remote_addr)) => {
                         // Set the server's address as it may have changed ports (as the spec
