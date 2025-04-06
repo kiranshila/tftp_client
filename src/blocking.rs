@@ -1,13 +1,25 @@
 //! Blocking implementation of the TFTP client
 
-use std::ffi::CString;
-use std::net::{SocketAddr, UdpSocket};
-use std::time::Duration;
+use std::{
+    ffi::CString,
+    net::{
+        SocketAddr,
+        UdpSocket,
+    },
+    time::Duration,
+};
 
 use tracing::debug;
 
-use crate::parser::{Packet, RequestMode};
-use crate::{Error, State, BLKSIZE};
+use crate::{
+    parser::{
+        Packet,
+        RequestMode,
+    },
+    Error,
+    State,
+    BLKSIZE,
+};
 
 /// Download a file via tftp
 pub fn download<T: AsRef<str> + std::fmt::Display>(
@@ -71,7 +83,8 @@ pub fn download<T: AsRef<str> + std::fmt::Display>(
                         match e.kind() {
                             std::io::ErrorKind::TimedOut | std::io::ErrorKind::WouldBlock => {
                                 debug!("│ Timeout");
-                                // We timed out, try sending the last packet again with exponential backoff
+                                // We timed out, try sending the last packet again with exponential
+                                // backoff
                                 local_retries -= 1;
                                 if local_retries == 0 {
                                     return Err(Error::Timeout);

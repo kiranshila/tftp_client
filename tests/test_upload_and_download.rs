@@ -3,7 +3,10 @@ use std::time::Duration;
 #[test]
 fn download_upload() {
     use std::net::UdpSocket;
-    use tftp_client::{download, upload};
+    use tftp_client::{
+        download,
+        upload,
+    };
 
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     let server = "127.0.0.1:69".parse().unwrap();
@@ -29,7 +32,10 @@ fn download_upload() {
 #[cfg(feature = "async")]
 fn download_upload_async() {
     use async_net::UdpSocket;
-    use tftp_client::asynchronous::{download, upload};
+    use tftp_client::asynchronous::{
+        download,
+        upload,
+    };
 
     futures_lite::future::block_on(async move {
         let socket = UdpSocket::bind("0.0.0.0:0").await.unwrap();
@@ -49,9 +55,16 @@ fn download_upload_async() {
         )
         .await
         .unwrap();
-        let res = download("/test-async", &socket, server, timeout, max_timeout, retries)
-            .await
-            .unwrap();
+        let res = download(
+            "/test-async",
+            &socket,
+            server,
+            timeout,
+            max_timeout,
+            retries,
+        )
+        .await
+        .unwrap();
         assert_eq!(test_payload, res);
     });
 }

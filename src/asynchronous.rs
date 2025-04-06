@@ -1,18 +1,27 @@
 //! Asynchonous implementation of the TFTP client,
 //! using [`smol-rs`](https://github.com/smol-rs/smol) components
 
-use std::ffi::CString;
-use std::io::ErrorKind;
-use std::net::SocketAddr;
-use std::time::Duration;
+use std::{
+    ffi::CString,
+    io::ErrorKind,
+    net::SocketAddr,
+    time::Duration,
+};
 
 use async_io::Timer;
 use async_net::UdpSocket;
 use futures_lite::FutureExt;
 use tracing::debug;
 
-use crate::parser::{Packet, RequestMode};
-use crate::{Error, State, BLKSIZE};
+use crate::{
+    parser::{
+        Packet,
+        RequestMode,
+    },
+    Error,
+    State,
+    BLKSIZE,
+};
 
 /// Download a file via tftp
 pub async fn download<T: AsRef<str> + std::fmt::Display>(
