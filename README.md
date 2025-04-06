@@ -3,7 +3,7 @@
 
 [![license](https://img.shields.io/badge/license-Apache--2.0_OR_MIT-blue?style=flat-square)](#license)
 [![docs](https://img.shields.io/docsrs/tftp_client?logo=rust&style=flat-square)](https://docs.rs/tftp_client/latest/tftp_client/index.html)
-[![rustc](https://img.shields.io/badge/rustc-1.65+-blue?style=flat-square&logo=rust)](https://www.rust-lang.org)
+[![rustc](https://img.shields.io/badge/rustc-1.78+-blue?style=flat-square&logo=rust)](https://www.rust-lang.org)
 [![build status](https://img.shields.io/github/actions/workflow/status/kiranshila/tftp_client/ci.yml?branch=main&style=flat-square&logo=github)](https://github.com/kiranshila/tftp_client/actions)
 [![Codecov](https://img.shields.io/codecov/c/github/kiranshila/tftp_client?style=flat-square)](https://app.codecov.io/gh/kiranshila/tftp_client)
 

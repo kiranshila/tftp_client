@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - [new-feature] Added async interface
+- [breaking-change] Bump MSRV to 1.78
 
 ## [0.2.0] - 2024-02-17
 

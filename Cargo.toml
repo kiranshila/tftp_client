@@ -9,6 +9,7 @@ homepage = "https://github.com/kiranshila/tftp_client"
 readme = "README.md"
 keywords = ["tftp"]
 categories = ["network-programming"]
+rust-version = "1.78"
 
 [features]
 default = []
