@@ -32,3 +32,30 @@ fn download_upload() {
     });
     assert_eq!(test_payload, res);
 }
+
+#[test]
+fn download_upload_big() {
+    let server = "127.0.0.1:69".parse().unwrap();
+    let timeout = Duration::from_millis(100);
+    let max_timeout = Duration::from_secs(5);
+    let retries = 8;
+    let test_payload: Vec<_> = rand::random_iter().take(1_000_000).collect();
+    let res = future::block_on(async {
+        let socket = UdpSocket::bind("0.0.0.0:0").await.unwrap();
+        upload(
+            "/test",
+            &test_payload,
+            &socket,
+            server,
+            timeout,
+            max_timeout,
+            retries,
+        )
+        .await
+        .unwrap();
+        download("/test", &socket, server, timeout, max_timeout, retries)
+            .await
+            .unwrap()
+    });
+    assert_eq!(test_payload, res);
+}

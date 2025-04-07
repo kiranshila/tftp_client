@@ -21,3 +21,4 @@ futures-lite = "2"
 
 [dev-dependencies]
 paste = "1"
+rand = "0.9"
