@@ -1,5 +1,5 @@
 # tftp_client
-> A pure-rust TFTP client library
+> A pure-rust async TFTP client library
 
 [![license](https://img.shields.io/badge/license-Apache--2.0_OR_MIT-blue?style=flat-square)](#license)
 [![docs](https://img.shields.io/docsrs/tftp_client?logo=rust&style=flat-square)](https://docs.rs/tftp_client/latest/tftp_client/index.html)
